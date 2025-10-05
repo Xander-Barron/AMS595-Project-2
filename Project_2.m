@@ -37,7 +37,7 @@ end
 
 function m = bisection(fn_f, s, e)
     maxIter = 1000; %max number of steps to do
-    tolerance = 1e-7; %can be changed, set to 1e-6 for now
+    tolerance = 1e-7; %can be changed, set to 1e-7 for now
 
     for k = 1:maxIter
         m = (s + e)/2; %midpoint
