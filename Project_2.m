@@ -41,25 +41,31 @@ function m = bisection(fn_f, s, e)
     end
 end
 
+numPoints = 10000; %min 1000, we use 10000
+xValues = linspace(-2, 1, numPoints); %span [-2,1] with our numPoints
+yValues = NaN(size(xValues)); %initialize an empty y vector
 
-numPoints = 1000; %can be set to whatever, the min is 1e3
-xValues = linspace(-2, 1, numPoints); %make 1000 points in [-2,1]
-yBoundary = zeros(size(xValues)); %make 0 vector for y
+maxY = 1; %how far we search vertically
+dy   = 0.01; %step size for checking
 
 for i = 1:numPoints
-    x = xValues(i); 
-
-    fn = indicator_fn_at_x(x); %assigns the indicator function to the one above
-
-    s = 0; %we know 0 is in the fractal
-    e = 1; %we know 1 is above the fractal
-
-    yBoundary(i) = bisection(fn, s, e);
+    x = xValues(i);
+    fn = indicator_fn_at_x(x);
+    y = 0; %lower bound
+    while y < maxY
+        if fn(y) ~= fn(y+dy) %sign change detected
+            yValues(i) = bisection(fn, y, y+dy); %use bisection function to find boundary
+            break
+        end
+        y = y + dy; %move up our step size for checking
+    end
 end
 
-
-plot(xValues, yBoundary, 'b.', 'MarkerSize', 4)
+plot(xValues, yValues, 'b.', 'MarkerSize', 4)
 grid on
 xlabel('Re(c)')
 ylabel('Im(c) of boundary')
-title('Approximate Mandelbrot Boundary along [-2,1]')
+title('Approximate Mandelbrot Boundaries')
+
+
+
