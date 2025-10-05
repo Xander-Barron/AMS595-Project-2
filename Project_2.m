@@ -1,4 +1,16 @@
-%%Mandelbrot fractal
+%%Mandelbrot Boundary Approximation and Arc Length
+%this approximates and plots a boundary for the Mandelbrot set boundary by
+%scanning vertical slices in the complex plane. It then fits a polynomial
+%of degree 15 to the non flat line portion of the boundary and estimates
+%the fractal's arc length using numerical integration.
+%
+%Outputs:
+%Figure with approximate Mendelbrot boundary
+%Estimate of arc length
+%
+%Notes:
+%The boundary of the Mandelbrot set is truly infinite as it is a fractal.
+%This only approximates the length using a polynomial fit of degree 15.
 
 
 function it = fractal(c)
@@ -45,7 +57,7 @@ numPoints = 10000; %min 1000, we use 10000
 xValues = linspace(-2, 1, numPoints); %span [-2,1] with our numPoints
 yValues = NaN(size(xValues)); %initialize an empty y vector
 
-maxY = 1; %how far we search vertically
+maxY = 1.5; %how far we search vertically
 dy   = 0.01; %step size for checking
 
 for i = 1:numPoints
@@ -61,11 +73,38 @@ for i = 1:numPoints
     end
 end
 
+figure
 plot(xValues, yValues, 'b.', 'MarkerSize', 4)
 grid on
 xlabel('Re(c)')
 ylabel('Im(c) of boundary')
 title('Approximate Mandelbrot Boundaries')
 
+%we see a flat line of y=0 from x in [-2, -1.4] (eyeballing)
 
+gate = xValues >= -1.4;
+%apply gate
+xFiltered = xValues(gate);
+yFiltered = yValues(gate);
 
+%second gate to remove NaNs
+NaNGate = ~isnan(yFiltered);
+xFiltered = xFiltered(NaNGate);
+yFiltered = yFiltered(NaNGate);
+
+%fitting polynomial of deg 15 to the filtered values
+p = polyfit(xFiltered, yFiltered, 15); 
+
+%function to find length of polynomial
+function l = poly_len(p, s, e)
+    dp = polyder(p); %derivative of polynomial p
+    ds = @(x) sqrt(1 + (polyval(dp, x)).^2);
+
+    l = integral(ds, s, e); %integrate over [s, e]
+end
+
+%finding length of polynomial from [-1.4, 1]
+length = poly_len(p, -1.4, 1);
+
+%display approx length
+fprintf("Approximate fractal length %.4f\n", length);
