@@ -1,0 +1,65 @@
+%%Mandelbrot fractal
+
+
+function it = fractal(c)
+    maxIter = 100; %max number of iterations
+    z = 0; %take z=0 at the start
+
+    for it = 1:maxIter
+        z = z^2 + c; %recurrence fucntion
+        if abs(z) > 2 %check if it has diverged
+            return %if it diverges, we exit
+        end
+    end
+    it = maxIter; %if we finish the for loop that means we never diverged
+end
+
+function fn = indicator_fn_at_x(x)
+    %we return +1 if we escape
+    %we return -1 if we stay bounded
+    %@(y) makes it an anonymous function
+    fn = @(y) (fractal(x + 1i * y)<100) * 2 -1; %tests if we are in or outside of the set
+    %this works since if we don't escape, we return 100 from fractal(c)
+    %which will make fn -1
+end
+
+function m = bisection(fn_f, s, e)
+    maxIter = 1000; %max number of steps to do
+    tolerance = 1e-7; %can be changed, set to 1e-6 for now
+
+    for k = 1:maxIter
+        m = (s + e)/2; %midpoint
+        if fn_f(m) == fn_f(s)
+            s = m; %if we have the same sign we move lower bound
+        else
+            e = m; %else we move the upper bound
+        end
+        if abs(e-s)<tolerance
+            m = (s + e)/2;
+            return
+        end
+    end
+end
+
+
+numPoints = 1000; %can be set to whatever, the min is 1e3
+xValues = linspace(-2, 1, numPoints); %make 1000 points in [-2,1]
+yBoundary = zeros(size(xValues)); %make 0 vector for y
+
+for i = 1:numPoints
+    x = xValues(i); 
+
+    fn = indicator_fn_at_x(x); %assigns the indicator function to the one above
+
+    s = 0; %we know 0 is in the fractal
+    e = 1; %we know 1 is above the fractal
+
+    yBoundary(i) = bisection(fn, s, e);
+end
+
+
+plot(xValues, yBoundary, 'b.', 'MarkerSize', 4)
+grid on
+xlabel('Re(c)')
+ylabel('Im(c) of boundary')
+title('Approximate Mandelbrot Boundary along [-2,1]')
